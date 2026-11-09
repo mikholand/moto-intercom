@@ -23,11 +23,11 @@ final class DiagnosticsLog: ObservableObject {
     private var handle: FileHandle?
     private let encoder: JSONEncoder = {
         let encoder = JSONEncoder()
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        // ISO8601FormatStyle — Sendable, в отличие от ISO8601DateFormatter.
+        let style = Date.ISO8601FormatStyle(includingFractionalSeconds: true)
         encoder.dateEncodingStrategy = .custom { date, enc in
             var container = enc.singleValueContainer()
-            try container.encode(formatter.string(from: date))
+            try container.encode(style.format(date))
         }
         encoder.outputFormatting = [.sortedKeys, .withoutEscapingSlashes]
         return encoder
