@@ -1,0 +1,13 @@
+# Xcode
+*.xcodeproj/
+xcuserdata/
+DerivedData/
+*.xcworkspace/xcuserdata/
+
+# Python
+__pycache__/
+.venv/
+
+# Записи с динамика и журналы spike кладите в docs/results/ осознанно
+rec/
+*.wav

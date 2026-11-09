@@ -1,0 +1,61 @@
+# Сборка AudioSpike без подписи → AudioSpike.ipa в артефактах.
+# Подписывает и ставит на iPhone Sideloadly с Windows (docs/install-without-mac.md).
+name: AudioSpike iOS build
+
+on:
+  push:
+    paths:
+      - "ios/AudioSpike/**"
+      - ".github/workflows/audiospike.yml"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-26
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: ios/AudioSpike
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Xcode version
+        run: xcodebuild -version
+
+      - name: Generate project
+        run: |
+          brew install xcodegen
+          xcodegen generate
+
+      - name: Build (unsigned)
+        run: |
+          if ! xcodebuild -project AudioSpike.xcodeproj -scheme AudioSpike \
+                -configuration Release -sdk iphoneos -destination 'generic/platform=iOS' \
+                -derivedDataPath build \
+                CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+                build > build.log 2>&1; then
+            # Полный лог огромный: в вывод шага — только ошибки, лог целиком — в артефакт.
+            grep -E "error:" build.log | sort -u | head -100
+            tail -30 build.log
+            exit 1
+          fi
+          grep -E "warning:" build.log | grep -v "/build/" | sort -u | head -50 || true
+
+      - name: Package IPA
+        run: |
+          mkdir -p Payload
+          cp -R build/Build/Products/Release-iphoneos/AudioSpike.app Payload/
+          zip -qry AudioSpike.ipa Payload
+
+      - uses: actions/upload-artifact@v6
+        with:
+          name: AudioSpike-ipa
+          path: ios/AudioSpike/AudioSpike.ipa
+          retention-days: 14
+
+      - uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: build-log
+          path: ios/AudioSpike/build.log
+          retention-days: 7
