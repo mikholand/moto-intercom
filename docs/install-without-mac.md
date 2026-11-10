@@ -20,13 +20,13 @@
 1. Сборка запускается сама при push в `ios/AudioSpike/`. Вручную: GitHub → Actions → «AudioSpike iOS build» → Run workflow.
 
    ```bash
-   gh workflow run audiospike.yml
+   gh workflow run audiospike.yml -R mikholand/moto-intercom
    ```
 
-2. Скачайте IPA последней успешной сборки:
+2. Скачайте IPA последней успешной сборки (`-R` позволяет запускать из любой папки):
 
    ```bash
-   gh run download --name AudioSpike-ipa --dir build-ipa
+   gh run download -R mikholand/moto-intercom --name AudioSpike-ipa --dir build-ipa
    ```
 
    Или вручную: страница запуска в Actions → Artifacts → `AudioSpike-ipa` (zip, внутри `AudioSpike.ipa`).
@@ -44,5 +44,5 @@
 Ошибки компиляции видны в шаге «Build (unsigned)», полный лог лежит в артефакте `build-log`.
 
 ```bash
-gh run view --log-failed
+gh run view -R mikholand/moto-intercom --log-failed
 ```
